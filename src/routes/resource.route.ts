@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Response, Router } from "express";
 import {
   create,
   getAll,
@@ -12,6 +12,10 @@ import { authenticate, authorize } from "../middlewares/auth";
 import { cacheMiddleware } from "../middlewares/cache";
 
 const router = Router();
+
+router.get("/", (_, res: Response) => {
+  res.send({ message: "Hello world app API!" });
+});
 
 /**
  * @openapi
