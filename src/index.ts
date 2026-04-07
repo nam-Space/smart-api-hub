@@ -24,7 +24,13 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "Hệ thống API động hỗ trợ Auth và Query nâng cao",
     },
-    servers: [{ url: `http://localhost:${PORT}` }],
+    servers: [
+      {
+        // Tự động nhận diện URL của Render hoặc dùng localhost
+        url: process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`,
+        description: "Server hiện tại",
+      },
+    ],
     // --- THÊM PHẦN NÀY ĐỂ HIỆN NÚT AUTHORIZE (KHÓA) TRÊN SWAGGER ---
     components: {
       securitySchemes: {
