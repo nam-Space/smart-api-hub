@@ -7,9 +7,17 @@ import resourceRouter from "./routes/resource.route";
 import authRouter from "./routes/auth.route";
 import { errorHandler } from "./middlewares/error";
 import { rateLimiter } from "./middlewares/rateLimit";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
+
 const PORT = 3000;
 
 // --- 1. Cấu hình Swagger UI (Yêu cầu số 7) ---
