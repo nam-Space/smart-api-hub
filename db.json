@@ -1,0 +1,21 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@example.com",
+      "password": "123",
+      "role": "admin"
+    },
+    { "id": 2, "email": "user@example.com", "password": "123", "role": "user" }
+  ],
+  "categories": [{ "id": 1, "name": "Technology" }],
+  "posts": [
+    {
+      "id": 1,
+      "title": "Hello World",
+      "content": "Nodejs is fun",
+      "user_id": 1,
+      "category_id": 1
+    }
+  ]
+}
