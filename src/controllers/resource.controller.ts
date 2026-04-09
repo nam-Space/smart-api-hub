@@ -187,7 +187,7 @@ export async function getAll(
     if (_expand) data = await handleExpand(data, _expand as string);
     if (_embed) data = await handleEmbed(resource, data, _embed as string);
 
-    return res.json(data);
+    return res.status(200).json(data);
   } catch (error) {
     next(error);
   }
@@ -210,7 +210,7 @@ export async function getById(
     if (_expand) data = await handleExpand(data, _expand as string);
     if (_embed) data = await handleEmbed(resource, data, _embed as string);
 
-    return res.json(data[0]);
+    return res.status(200).json(data[0]);
   } catch (error) {
     next(error);
   }

@@ -57,7 +57,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       { expiresIn: process.env.TOKEN_EXPIRATION as any },
     );
 
-    res.json({ message: "Đăng nhập thành công", token });
+    res.status(200).json({ message: "Đăng nhập thành công", token });
   } catch (error) {
     next(error);
   }
