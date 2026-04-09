@@ -1,28 +1,54 @@
-# 1. Sử dụng Node.js bản 22 (nhẹ và ổn định)
-FROM node:22-alpine
-
-# 2. Tạo thư mục làm việc trong container
+# Stage 1: Builder - Dành cho việc cài đặt và biên dịch mã nguồn
+FROM node:22-alpine AS builder
+ 
+# 1. Thiết lập thư mục làm việc trong container
 WORKDIR /app
-
-# 3. Chỉ copy các file package trước để tận dụng Docker Cache
-# Giúp các lần build sau cực nhanh nếu bạn không thêm thư viện mới
+ 
+# 2. Copy các file cấu hình package
 COPY package*.json ./
-
-# 4. Cài đặt toàn bộ thư viện (bao gồm cả devDependencies để biên dịch TS)
-RUN npm install
-
-# 5. Copy toàn bộ mã nguồn vào container
+COPY tsconfig.json ./
+ 
+# 3. Cài đặt toàn bộ thư viện
+RUN npm i
+ 
+ 
 COPY . .
-
-# 6. Biên dịch TypeScript sang JavaScript (lệnh này tạo ra thư mục dist)
+ 
+# 5. Compile TypeScript sang JavaScript (thư mục dist)
 RUN npm run build
-
-# 7. Xóa bớt các thư viện devDependencies (như typescript, nodemon) 
-# giúp kích thước image nhẹ đi rất nhiều
-RUN npm prune --production
-
-# 8. Mở cổng 3000 (cổng mà server của bạn đang chạy)
+ 
+ 
+# Stage 2: Production - Môi trường chạy thực tế siêu nhẹ
+FROM node:22-alpine AS production
+ 
+WORKDIR /app
+ 
+# 1. Định nghĩa môi trường
+ENV NODE_ENV=development
+ENV DB_HOST=localhost
+ENV DB_PORT=5432
+ENV DB_NAME=postgres_db
+ENV DB_USER=postgres
+ENV DB_PASSWORD=postgres
+ENV JWT_SECRET=this_is_my_scret
+ENV TOKEN_EXPIRATION=1d
+ 
+# 2. Copy package.json sang để cài thư viện
+COPY package*.json ./
+ 
+# 3. Chỉ cài đặt các thư viện phục vụ cho Production (bỏ qua devDependencies)
+# Chú ý: Từ npm v8, param --only=production có thể dùng --omit=dev
+RUN npm i --omit=dev
+ 
+# 4. Chỉ Copy thư mục đã build (dist) từ Stage 1 sang Stage 2
+COPY --from=builder /app/dist ./dist
+COPY db.json .
+ 
+# Bảo mật: Dùng user "node" có sẵn thay vì "root" (quyền cao nhất) để chạy app
+USER node
+ 
+# 5. Expose port (Thông báo port ứng dụng sẽ lắng nghe)
 EXPOSE 3000
-
-# 9. Chạy ứng dụng bằng file JavaScript đã biên dịch
+ 
+# 5. Khởi chạy ứng dụng bằng Node.js tiêu chuẩn
 CMD ["npm", "run", "start"]

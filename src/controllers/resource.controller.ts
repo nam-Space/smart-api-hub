@@ -243,21 +243,31 @@ export async function update(
   try {
     const { resource, id } = req.params;
 
-    // 1. Kiểm tra bản ghi có tồn tại không trước khi update
+    // 1. Lấy bản ghi hiện tại để biết cấu trúc các cột
     const existingItem = await db(resource).where({ id }).first();
     if (!existingItem) {
       return res
         .status(404)
-        .json({ error: "Dữ liệu không tồn tại để cập nhật" });
+        .json({ error: "Dữ liệu không tồn tại để thay thế" });
     }
 
-    // 2. Thực hiện cập nhật toàn bộ body và tự động cập nhật updated_at
+    // 2. LOGIC PUT: Tạo một object mới để thay thế hoàn toàn
+    // Chúng ta duyệt qua tất cả các key của bản ghi cũ
+    const putData: any = { updated_at: new Date() };
+
+    Object.keys(existingItem).forEach((key) => {
+      // Bỏ qua các trường không được phép ghi đè
+      if (key === "id" || key === "created_at" || key === "updated_at") return;
+
+      // Nếu client gửi trường này lên -> lấy giá trị của client
+      // Nếu client KHÔNG gửi -> set về null (đây chính là sự khác biệt của PUT)
+      putData[key] = req.body[key] !== undefined ? req.body[key] : null;
+    });
+
+    // 3. Thực hiện cập nhật
     const [updatedItem] = await db(resource)
       .where({ id })
-      .update({
-        ...req.body,
-        updated_at: new Date(), // Tự động update thời gian sửa (Yêu cầu số 2)
-      })
+      .update(putData)
       .returning("*");
 
     // --- BONUS LOGIC ---
